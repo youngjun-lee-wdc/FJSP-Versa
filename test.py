@@ -1,10 +1,10 @@
-class Job:
-	def __init__(self, id_job):
-		self.__id_job = id_job
+class Test:
+	def __init__(self, id_test):
+		self.__id_test = id_test
 		self.__activities_to_be_done = []
 		self.__activities_done = []
 
-	# Display the job nicer
+	# Display the test nicer
 	def __str__(self):
 		output = ""
 
@@ -16,16 +16,16 @@ class Job:
 
 		return output
 
-	# Return the job's id
+	# Return the test's id
 	@property
-	def id_job(self):
-		return self.__id_job
+	def id_test(self):
+		return self.__id_test
 
-	# Add an activity to the job
+	# Add an activity to the test
 	def add_activity(self, activity):
 		self.__activities_to_be_done.append(activity)
 
-	# Return if the job is done
+	# Return if the test is done
 	@property
 	def is_done(self):
 		return len(self.activities_to_be_done) == 0
