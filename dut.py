@@ -26,7 +26,7 @@ class Dut:
 	def add_operation(self, activity, operation):
 		if self.is_working_at_max_capacity():
 			raise EnvironmentError("Machine already working at max capacity")
-		if operation.id_machine != self.__id_machine:
+		if operation.id_dut != self.__dut_id:
 			raise EnvironmentError("Operation assigned to the wrong machine")
 
 		operation.time = self.__current_time

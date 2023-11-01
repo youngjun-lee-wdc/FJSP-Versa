@@ -1,16 +1,16 @@
 class Operation:
-	def __init__(self, id_operation: int, id_machine: str, duration: int):
+	def __init__(self, id_operation: int, id_dut: str, duration: int):
 		self.__id_operation = id_operation
 		self.__duration = duration
-		self.__id_machine = id_machine
+		self.__id_dut = id_dut
 		self.__time = None
 		self.__is_pending = False
 		self.__place_of_arrival = None
 
 	# Display the operation nicer
 	def __str__(self):
-		output = "Operation n°" + str(self.__id_operation) + " -> Machine: " + str(
-			self.__id_machine) + ", Duration: " + str(self.__duration)
+		output = "Operation # " + str(self.__id_operation) + " -> Dut: " + str(
+			self.__id_dut) + ", Duration: " + str(self.__duration)
 
 		if not (self.__time is None):
 			output += ", Started at time " + str(self.__time)
@@ -48,8 +48,8 @@ class Operation:
 
 	# Return the machine's id who has to do the operation
 	@property
-	def id_machine(self):
-		return self.__id_machine
+	def id_dut(self):
+		return self.__id_dut
 
 	# Return the operation's duration
 	@property

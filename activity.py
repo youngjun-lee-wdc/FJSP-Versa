@@ -1,13 +1,13 @@
 class Activity:
-	def __init__(self, job, id_activity):
-		self.__job = job
+	def __init__(self, test, id_activity):
+		self.__test = test
 		self.__id_activity = id_activity
 		self.__operations_to_be_done = []
 		self.__operation_done = None
 
 	# Display the activity nicer
 	def __str__(self):
-		output = "Job n°" + str(self.id_job) + " Activity n°" + str(self.__id_activity) + "\n"
+		output = "Test # " + str(self.id_test) + " Activity #" + str(self.__id_activity) + "\n"
 
 		output += "Operations to be done\n"
 		for operation in self.__operations_to_be_done:
@@ -18,10 +18,10 @@ class Activity:
 
 		return output
 
-	# Return the job's id of the activity
+	# Return the test's id of the activity
 	@property
-	def id_job(self):
-		return self.__job.id_job
+	def id_test(self):
+		return self.__test.id_test
 
 	# Return the activity's id
 	@property
@@ -63,7 +63,7 @@ class Activity:
 			filter(lambda element: element.id_operation != operation.id_operation, self.__operations_to_be_done))
 		# Append the operation to the list of the operations already done
 		self.__operation_done = operation
-		self.__job.activity_is_done(self)
+		self.__test.activity_is_done(self)
 
 	@property
 	def shop_time(self):
@@ -72,7 +72,7 @@ class Activity:
 
 	@property
 	def is_feasible(self):
-		return self.__job.check_if_previous_activity_is_done(self.__id_activity)
+		return self.__test.check_if_previous_activity_is_done(self.__id_activity)
 
 	@property
 	def is_pending(self):
