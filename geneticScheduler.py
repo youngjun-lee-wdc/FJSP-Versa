@@ -44,7 +44,9 @@ class GeneticScheduler:
 		list_activities = []
 		for temp_job in tempTestsCopy:
 			for temp_activity in temp_job.activities_done:
-				activity = self.__tests[temp_activity.id_test - 1].get_activity(temp_activity.id_activity)
+				raise ValueError(temp_activity.id_activity)
+				activity = self.__tests[temp_activity.id_test-1].get_activity(temp_activity.id_activity)
+				# activity = self.__tests[temp_activity.id_test - 1].get_activity(temp_activity.id_activity)
 				operation = activity.get_operation(temp_activity.operation_done.id_operation)
 				list_activities.append((temp_activity.operation_done.time, activity, operation))
 		# Ordering activities by time

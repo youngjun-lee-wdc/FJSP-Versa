@@ -26,12 +26,9 @@ class Scheduler:
 
 			best_candidates = heuristic(self.__tests_to_be_done, self.__max_operations, current_step)
 			for id_dut, candidates in best_candidates.items():
-				print(id_dut)
-				# return
-				dut = self.__duts[0]
-				# dut = self.__duts[id_dut - 1]
-				# dut = id_dut
-				# machine = self.__machines[id_dut]
+				dutsList = [dut.id_dut for dut in self.__duts]
+				idx = dutsList.index(id_dut)
+				dut = self.__duts[idx]
 				for activity, operation in candidates:
 					if not (dut.is_working_at_max_capacity() or activity.is_pending):
 						dut.add_operation(activity, operation)
