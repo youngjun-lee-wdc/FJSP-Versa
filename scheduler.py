@@ -5,13 +5,13 @@ from termcolor import colored
 
 
 class Scheduler:
-	def __init__(self, duts, max_operations, tests):
+	def __init__(self, duts, maxOperations, tests):
 		init()  # Init colorama for color display
-		self.__original_stdout = sys.stdout
+		self.__originalStdout = sys.stdout
 		self.__duts = duts
-		self.__tests_to_be_done = tests
-		self.__tests_done = []
-		self.__max_operations = max_operations
+		self.__testsToBeDone = tests
+		self.__testsDone = []
+		self.__maxOperations = maxOperations
 
 	# Run the scheduler with an heuristic
 	def run(self, heuristic, verbose=True):
@@ -19,34 +19,34 @@ class Scheduler:
 		if not verbose:
 			sys.stdout = None
 
-		current_step = 0
+		currentStep = 0
 
-		while len(self.__tests_to_be_done) > 0:
-			current_step += 1
+		while len(self.__testsToBeDone) > 0:
+			currentStep += 1
 
-			best_candidates = heuristic(self.__tests_to_be_done, self.__max_operations, current_step)
-			for id_dut, candidates in best_candidates.items():
-				dutsList = [dut.id_dut for dut in self.__duts]
-				idx = dutsList.index(id_dut)
+			bestCandidates = heuristic(self.__testsToBeDone, self.__maxOperations, currentStep)
+			for idDut, candidates in bestCandidates.items():
+				dutsList = [dut.idDut for dut in self.__duts]
+				idx = dutsList.index(idDut)
 				dut = self.__duts[idx]
 				for activity, operation in candidates:
-					if not (dut.is_working_at_max_capacity() or activity.is_pending):
-						dut.add_operation(activity, operation)
+					if not (dut.isWorkingAtMaxCapacity() or activity.isPending):
+						dut.addOperation(activity, operation)
 
 			for dut in self.__duts:
 				dut.work()
 
-			for test in self.__tests_to_be_done:
+			for test in self.__testsToBeDone:
 				if test.is_done:
-					self.__tests_to_be_done = list(
-						filter(lambda element: element.id_test != test.id_test, self.__tests_to_be_done))
-					self.__tests_done.append(test)
+					self.__testsToBeDone = list(
+						filter(lambda element: element.idTest != test.idTest, self.__testsToBeDone))
+					self.__testsDone.append(test)
 
-		print(colored("[SCHEDULER]", "green"), "Done in " + str(current_step) + " units of time")
+		print(colored("[SCHEDULER]", "green"), "Done in " + str(currentStep) + " units of time")
 
 		# Reenable stdout
 		if not verbose:
-			sys.stdout = self.__original_stdout
+			sys.stdout = self.__originalStdout
 
 
-		return current_step
+		return currentStep

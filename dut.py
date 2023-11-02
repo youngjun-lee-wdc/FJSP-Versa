@@ -1,49 +1,49 @@
 class Dut:
-	def __init__(self, dut_id: str, max_operations: int):
-		self.__dut_id = dut_id
-		self.__is_working = False
-		self.__operations_done = []
-		self.__processed_operations = []
-		self.__max_operations = max_operations
-		self.__current_time = 0
-		self.__available_places = [i for i in range(max_operations)]
+	def __init__(self, dutId: str, maxOperations: int):
+		self.__dutId = dutId
+		self.__isWorking = False
+		self.__operationsDone = []
+		self.__processedOperations = []
+		self.__maxOperations = maxOperations
+		self.__currentTime = 0
+		self.__availablePlaces = [i for i in range(maxOperations)]
 
 	# Return the machine's id
 	@property
-	def id_dut(self):
-		return self.__dut_id
+	def idDut(self):
+		return self.__dutId
 
 	# Return the operations done by the machine
 	@property
-	def operations_done(self):
-		return self.__operations_done
+	def operationsDone(self):
+		return self.__operationsDone
 
 	# Return if the machine is working at max capacity
-	def is_working_at_max_capacity(self):
-		return len(self.__processed_operations) == self.__max_operations
+	def isWorkingAtMaxCapacity(self):
+		return len(self.__processedOperations) == self.__maxOperations
 
 	# Add an operation to the treatment list of the machine
-	def add_operation(self, activity, operation):
-		if self.is_working_at_max_capacity():
+	def addOperation(self, activity, operation):
+		if self.isWorkingAtMaxCapacity():
 			raise EnvironmentError("Machine already working at max capacity")
 		
-		if operation.id_dut != self.__dut_id:
+		if operation.idDut != self.__dutId:
 			raise EnvironmentError("Operation assigned to the wrong machine")
 
-		operation.time = self.__current_time
-		operation.is_pending = True
-		operation.place_of_arrival = self.__available_places.pop(0)
+		operation.time = self.__currentTime
+		operation.isPending = True
+		operation.placeOfArrival = self.__availablePlaces.pop(0)
 
-		self.__processed_operations.append((activity, operation))
+		self.__processedOperations.append((activity, operation))
 
 	# Method to simulate a work process during one unit of time
 	def work(self):
-		self.__current_time += 1
-		for activity, operation in self.__processed_operations:
-			if operation.time + operation.duration <= self.__current_time:
-				self.__processed_operations = list(filter(lambda element: not (
-						element[0].id_test == activity.id_test and element[0].id_activity == activity.id_activity and
-						element[1].id_operation == operation.id_operation), self.__processed_operations))
-				self.__available_places.append(operation.place_of_arrival)
-				activity.terminate_operation(operation)
-				self.__operations_done.append(operation)
+		self.__currentTime += 1
+		for activity, operation in self.__processedOperations:
+			if operation.time + operation.duration <= self.__currentTime:
+				self.__processedOperations = list(filter(lambda element: not (
+						element[0].idTest == activity.idTest and element[0].idActivity == activity.idActivity and
+						element[1].idOperation == operation.idOperation), self.__processedOperations))
+				self.__availablePlaces.append(operation.placeOfArrival)
+				activity.terminateOperation(operation)
+				self.__operationsDone.append(operation)

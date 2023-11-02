@@ -15,115 +15,115 @@ from termcolor import colored
 class GeneticScheduler:
 	def __init__(self, duts, tests):
 		init()  # Init colorama for color display
-		self.__original_stdout = sys.stdout
+		self.__originalStdout = sys.stdout
 		self.__toolbox = base.Toolbox()
 		self.__duts = duts
 		self.__tests = tests
 
 	# Constraint order
 	@staticmethod
-	def constraint_order_respected(individual):
-		list = [(activity.id_job, activity.id_activity) for (activity, _) in individual]
-		for key, (id_job, id_activity) in enumerate(list):
-			if id_activity == 1:
+	def constraintOrderRespected(individual):
+		list = [(activity.idTest, activity.idActivity) for (activity, _) in individual]
+		for key, (idTest, idActivity) in enumerate(list):
+			if idActivity == 1:
 				continue
-			elif not list.index((id_job, id_activity - 1)) < key:
+			elif not list.index((idTest, idActivity - 1)) < key:
 				return False
 		return True
 
 	# Initialize an individual for the genetic algorithm
-	def init_individual(self, ind_class, size):
+	def initIndividual(self, indClass, size):
 		tempTestsCopy = copy.deepcopy(self.__tests)
 		tempDutsCopy = copy.deepcopy(self.__duts)
 
 		# Run the scheduler
 		s = Scheduler(tempDutsCopy, 1, tempTestsCopy)
-		s.run(Heuristics.random_operation_choice, verbose=False)
+		s.run(Heuristics.randomOperationChoice, verbose=False)
 
 		# Retriving all the activities and the operation done
-		list_activities = []
-		for temp_job in tempTestsCopy:
-			for temp_activity in temp_job.activities_done:
-				raise ValueError(temp_activity.id_activity)
-				activity = self.__tests[temp_activity.id_test-1].get_activity(temp_activity.id_activity)
-				# activity = self.__tests[temp_activity.id_test - 1].get_activity(temp_activity.id_activity)
-				operation = activity.get_operation(temp_activity.operation_done.id_operation)
-				list_activities.append((temp_activity.operation_done.time, activity, operation))
+		listActivities = []
+		for tempTest in tempTestsCopy:
+			for tempActivity in tempTest.activitiesDone:
+				raise ValueError(tempActivity.idActivity)
+				activity = self.__tests[tempActivity.idTest-1].getActivity(tempActivity.idActivity)
+				# activity = self.__tests[temp_activity.idTest - 1].getActivity(temp_activity.idActivity)
+				operation = activity.get_operation(tempActivity.operation_done.idOperation)
+				listActivities.append((tempActivity.operation_done.time, activity, operation))
 		# Ordering activities by time
-		list_activities = sorted(list_activities, key=lambda x: x[0])
-		individual = [(activity, operation) for (_, activity, operation) in list_activities]
+		listActivities = sorted(listActivities, key=lambda x: x[0])
+		individual = [(activity, operation) for (_, activity, operation) in listActivities]
 		del tempTestsCopy, tempDutsCopy
-		return ind_class(individual)
+		return indClass(individual)
 
 	# Initialize a population
-	def init_population(self, total_population):
-		return [self.__toolbox.individual() for _ in range(total_population)]
+	def initPopulation(self, totalPopulation):
+		return [self.__toolbox.individual() for _ in range(totalPopulation)]
 
 	# Compute the time an individual take
-	def compute_time(self, individual):
+	def computeTime(self, individual):
 		# List matching the activities to the time it takes place
-		list_time = []
+		listTime = []
 		# Operation schedule on machines indexed by machines' id
 		schedule = {}
 		for dut in self.__duts:
-			schedule.update({dut.id_dut: []})
+			schedule.update({dut.idDut: []})
 		# Operation done indexed by job's id
-		operations_done = {}
+		operationsDone = {}
 		for test in self.__tests:
-			operations_done.update({test.id_test: []})
+			operationsDone.update({test.idTest: []})
 
 		# For each item in individual, we compute the actual time at which the operation considered start
 		for activity, operation in individual:
 			# Get at which time the previous operation is done
-			time_last_operation, last_operation_job = operations_done.get(activity.id_job)[-1] if len(
-				operations_done.get(activity.id_job)) > 0 else (0, None)
-			time_last_machine, last_operation_machine = schedule.get(operation.id_dut)[-1] if len(
-				schedule.get(operation.id_dut)) > 0 else (0, None)
+			timeLastOperation, lastOperationJob = operationsDone.get(activity.idTest)[-1] if len(
+				operationsDone.get(activity.idTest)) > 0 else (0, None)
+			timeLastMachine, lastOperationMachine = schedule.get(operation.idDut)[-1] if len(
+				schedule.get(operation.idDut)) > 0 else (0, None)
 
-			if last_operation_machine is None and last_operation_job is None:
+			if lastOperationMachine is None and lastOperationJob is None:
 				time = 0
-			elif last_operation_machine is None:
-				time = time_last_operation + last_operation_job.duration
-			elif last_operation_job is None:
-				time = time_last_machine + last_operation_machine.duration
+			elif lastOperationMachine is None:
+				time = timeLastOperation + lastOperationJob.duration
+			elif lastOperationJob is None:
+				time = timeLastMachine + lastOperationMachine.duration
 			else:
-				time = max(time_last_machine + last_operation_machine.duration,
-						   time_last_operation + last_operation_job.duration)
+				time = max(timeLastMachine + lastOperationMachine.duration,
+						   timeLastOperation + lastOperationJob.duration)
 
-			list_time.append(time)
+			listTime.append(time)
 
-			operations_done.update({activity.id_job: operations_done.get(activity.id_job) + [(time, operation)]})
-			schedule.update({operation.id_dut: schedule.get(operation.id_dut) + [(time, operation)]})
+			operationsDone.update({activity.idTest: operationsDone.get(activity.idTest) + [(time, operation)]})
+			schedule.update({operation.idDut: schedule.get(operation.idDut) + [(time, operation)]})
 
 		# We compute the total time we need to process all the jobs
-		total_time = 0
+		totalTime = 0
 		for dut in self.__duts:
-			if len(schedule.get(dut.id_dut)) > 0:
-				time, operation = schedule.get(dut.id_dut)[-1]
-				if time + operation.duration > total_time:
-					total_time = time + operation.duration
+			if len(schedule.get(dut.idDut)) > 0:
+				time, operation = schedule.get(dut.idDut)[-1]
+				if time + operation.duration > totalTime:
+					totalTime = time + operation.duration
 
-		return total_time, list_time
+		return totalTime, listTime
 
 	# Evaluate the fitness for an individual, in our case it means compute the total time an individual take
-	def evaluate_individual(self, individual):
-		return self.compute_time(individual)[0],
+	def evaluateIndividual(self, individual):
+		return self.computeTime(individual)[0],
 
 	# Create a mutant based on an individual
 	# In our case it means select another operation within an activity with multiple choices for an operation
 	@staticmethod
-	def mutate_individual(individual):
+	def mutateIndividual(individual):
 		# Select the possible candidates, meaning the activities with multiple choices for an operation
-		candidates = list(filter(lambda element: len(element[0].next_operations) > 1, individual))
+		candidates = list(filter(lambda element: len(element[0].nextOperations) > 1, individual))
 		# If some candidates have been found, mutate a random one
 		if len(candidates) > 0:
-			mutant_activity, previous_operation = candidates[random.randint(0, len(candidates) - 1)]
-			id_mutant_activity = [element[0] for element in individual].index(mutant_activity)
-			mutant_operation = previous_operation
-			while mutant_operation.id_operation == previous_operation.id_operation:
-				mutant_operation = mutant_activity.next_operations[
-					random.randint(0, len(mutant_activity.next_operations) - 1)]
-			individual[id_mutant_activity] = (mutant_activity, mutant_operation)
+			mutantActivity, previousOperation = candidates[random.randint(0, len(candidates) - 1)]
+			idMutantActivity = [element[0] for element in individual].index(mutantActivity)
+			mutantOperation = previousOperation
+			while mutantOperation.idOperation == previousOperation.idOperation:
+				mutantOperation = mutantActivity.nextOperations[
+					random.randint(0, len(mutantActivity.nextOperations) - 1)]
+			individual[idMutantActivity] = (mutantActivity, mutantOperation)
 		# Remove the previous fitness value because it is deprecated
 		del individual.fitness.values
 		# Return the mutant
@@ -134,101 +134,101 @@ class GeneticScheduler:
 	# It needs to meet some constraint to be efficient:
 	#	You can't move an activity before or after another one from the same job
 	@staticmethod
-	def compute_bounds(permutation, considered_index):
-		considered_activity, _ = permutation[considered_index]
-		min_index = key = 0
-		max_index = len(permutation) - 1
-		while key < max_index:
+	def computeBounds(permutation, consideredIndex):
+		consideredActivity, _ = permutation[consideredIndex]
+		minIndex = key = 0
+		maxIndex = len(permutation) - 1
+		while key < maxIndex:
 			activity, _ = permutation[key]
-			if activity.id_job == considered_activity.id_job:
-				if min_index < key < considered_index:
-					min_index = key
-				if considered_index < key < max_index:
-					max_index = key
+			if activity.idTest == consideredActivity.idTest:
+				if minIndex < key < consideredIndex:
+					minIndex = key
+				if consideredIndex < key < maxIndex:
+					maxIndex = key
 			key += 1
-		return min_index, max_index
+		return minIndex, maxIndex
 
-	def permute_individual(self, individual):
-		permutation_possible = False
-		considered_index = considered_permutation_index = 0
-		while not permutation_possible:
-			considered_index = min_index = max_index = 0
-			# Loop until we can make some moves, i.e. when max_index - min_index > 2
-			while max_index - min_index <= 2:
-				considered_index = random.randint(0, len(individual) - 1)
-				min_index, max_index = self.compute_bounds(individual, considered_index)
+	def permuteIndividual(self, individual):
+		permutationPossible = False
+		consideredIndex = consideredPermutationIndex = 0
+		while not permutationPossible:
+			consideredIndex = minIndex = maxIndex = 0
+			# Loop until we can make some moves, i.e. when maxIndex - minIndex > 2
+			while maxIndex - minIndex <= 2:
+				consideredIndex = random.randint(0, len(individual) - 1)
+				minIndex, maxIndex = self.computeBounds(individual, consideredIndex)
 
 			# Select a random activity within those bounds (excluded) to permute with
-			considered_permutation_index = random.randint(min_index + 1, max_index - 1)
-			min_index_permutation, max_index_permutation = self.compute_bounds(individual,
-																			   considered_permutation_index)
-			if min_index_permutation < considered_index < max_index_permutation:
-				permutation_possible = considered_index != considered_permutation_index
+			consideredPermutationIndex = random.randint(minIndex + 1, maxIndex - 1)
+			minIndexPermutation, maxIndexPermutation = self.computeBounds(individual,
+																			   consideredPermutationIndex)
+			if minIndexPermutation < consideredIndex < maxIndexPermutation:
+				permutationPossible = consideredIndex != consideredPermutationIndex
 
 		# A possible permutation has been found
-		individual[considered_index], individual[considered_permutation_index] = individual[
-																					 considered_permutation_index], \
-																				 individual[considered_index]
+		individual[consideredIndex], individual[consideredPermutationIndex] = individual[
+																					 consideredPermutationIndex], \
+																				 individual[consideredIndex]
 		return individual
 
 	# Move an activity inside the scheduler (different than swapping)
-	def move_individual(self, individual):
+	def moveIndividual(self, individual):
 		print(individual)
-		considered_index = min_index = max_index = 0
-		# Loop until we can make some moves, i.e. when max_index - min_index > 2
-		while max_index - min_index <= 2:
-			considered_index = random.randint(0, len(individual) - 1)
-			min_index, max_index = self.compute_bounds(individual, considered_index)
+		consideredIndex = minIndex = maxIndex = 0
+		# Loop until we can make some moves, i.e. when maxIndex - minIndex > 2
+		while maxIndex - minIndex <= 2:
+			consideredIndex = random.randint(0, len(individual) - 1)
+			minIndex, maxIndex = self.computeBounds(individual, consideredIndex)
 		# Loop until we find a different index to move to
-		new_index = random.randint(min_index + 1, max_index - 1)
-		while considered_index == new_index:
-			new_index = random.randint(min_index + 1, max_index - 1)
+		newIndex = random.randint(minIndex + 1, maxIndex - 1)
+		while consideredIndex == newIndex:
+			newIndex = random.randint(minIndex + 1, maxIndex - 1)
 		# Move the activity inside the scheduler
-		individual.insert(new_index, individual.pop(considered_index))
+		individual.insert(newIndex, individual.pop(consideredIndex))
 		return individual
 
-	def evolve_individual(self, individual, mutation_probability, permutation_probability, move_probability):
-		future_individual = copy.deepcopy(individual)
-		if random.randint(0, 100) < mutation_probability:
-			future_individual = self.mutate_individual(future_individual)
-		if random.randint(0, 100) < permutation_probability:
-			future_individual = self.permute_individual(future_individual)
-		if random.randint(0, 100) < move_probability:
-			future_individual = self.move_individual(future_individual)
-		return future_individual
+	def evolveIndividual(self, individual, mutationProbability, permutationProbability, moveProbability):
+		futureIndividual = copy.deepcopy(individual)
+		if random.randint(0, 100) < mutationProbability:
+			futureIndividual = self.mutateIndividual(futureIndividual)
+		if random.randint(0, 100) < permutationProbability:
+			futureIndividual = self.permuteIndividual(futureIndividual)
+		if random.randint(0, 100) < moveProbability:
+			futureIndividual = self.moveIndividual(futureIndividual)
+		return futureIndividual
 
 	# Run a tournament between individuals within a population to get some of them
 	@staticmethod
-	def run_tournament(population, total=10):
+	def runTournament(population, total=10):
 		# Because you can't have a bigger population as a result of the tournament, we assert that constraint
 		assert total <= len(population)
-		new_population = []
-		while len(new_population) < total:
-			first_individual = population[random.randint(0, len(population) - 1)]
-			second_individual = population[random.randint(0, len(population) - 1)]
-			if first_individual.fitness.values[0] < second_individual.fitness.values[0]:
-				new_population.append(first_individual)
-				population.remove(first_individual)
+		newPopulation = []
+		while len(newPopulation) < total:
+			firstIndividual = population[random.randint(0, len(population) - 1)]
+			secondIndividual = population[random.randint(0, len(population) - 1)]
+			if firstIndividual.fitness.values[0] < secondIndividual.fitness.values[0]:
+				newPopulation.append(firstIndividual)
+				population.remove(firstIndividual)
 			else:
-				new_population.append(second_individual)
-				population.remove(second_individual)
+				newPopulation.append(secondIndividual)
+				population.remove(secondIndividual)
 		del population
-		return new_population
+		return newPopulation
 
 	# Simulate the individual with the machines
-	def run_simulation(self, individual):
-		total_time, list_time = self.compute_time(individual)
-		for key, (individual_activity, individual_operation) in enumerate(individual):
-			activity = self.__jobs[individual_activity.id_job - 1].get_activity(individual_activity.id_activity)
-			operation = activity.get_operation(individual_operation.id_operation)
-			operation.time = list_time[key]
-			operation.place_of_arrival = 0
-			activity.terminate_operation(operation)
-		return total_time
+	def runSimulation(self, individual):
+		totalTime, listTime = self.computeTime(individual)
+		for key, (individualActivity, individualOperation) in enumerate(individual):
+			activity = self.__tests[individualActivity.idTest - 1].getActivity(individualActivity.idActivity)
+			operation = activity.get_operation(individualOperation.idOperation)
+			operation.time = listTime[key]
+			operation.placeOfArrival = 0
+			activity.terminateOperation(operation)
+		return totalTime
 
 	# Run the genetic scheduler
-	def runGenetic(self, total_population=10, max_generation=100, verbose=False):
-		assert total_population > 0, max_generation > 0
+	def runGenetic(self, totalPopulation=10, maxGeneration=100, verbose=False):
+		assert totalPopulation > 0, maxGeneration > 0
 
 		# Disable print if verbose is False
 		if not verbose:
@@ -237,50 +237,50 @@ class GeneticScheduler:
 		creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 		creator.create("Individual", list, fitness=creator.FitnessMin)
 
-		self.__toolbox.register("individual", self.init_individual, creator.Individual, size=1)
-		self.__toolbox.register("mutate", self.mutate_individual)
-		self.__toolbox.register("permute", self.permute_individual)
-		self.__toolbox.register("evaluate", self.evaluate_individual)
+		self.__toolbox.register("individual", self.initIndividual, creator.Individual, size=1)
+		self.__toolbox.register("mutate", self.mutateIndividual)
+		self.__toolbox.register("permute", self.permuteIndividual)
+		self.__toolbox.register("evaluate", self.evaluateIndividual)
 		 
 		print(colored("[GENETIC]", "cyan"), "Generating population")
 		
-		population = self.init_population(total_population)
+		population = self.initPopulation(totalPopulation)
 		print(population)
 		best = population[0]
 		# print(best)
 		# return 
-		best.fitness.values = self.evaluate_individual(best)
-		print(colored("[GENETIC]", "cyan"), "Starting evolution for", max_generation, "generations")
-		for current_generation in range(max_generation):
+		best.fitness.values = self.evaluateIndividual(best)
+		print(colored("[GENETIC]", "cyan"), "Starting evolution for", maxGeneration, "generations")
+		for currentGeneration in range(maxGeneration):
 		# 	# Generate mutation and permutation probabilities for the next generation
-			mutation_probability = random.randint(0, 100)
-			permutation_probability = random.randint(0, 100)
-			move_probability = random.randint(0, 100)
+			mutationProbability = random.randint(0, 100)
+			permutationProbability = random.randint(0, 100)
+			moveProbability = random.randint(0, 100)
 			# Evolve the population
-			print(colored("[GENETIC]", "cyan"), "Evolving to generation", current_generation + 1)
-			mutants = list(set([random.randint(0, total_population - 1) for _ in
-								range(random.randint(1, total_population))]))
+			print(colored("[GENETIC]", "cyan"), "Evolving to generation", currentGeneration + 1)
+			mutants = list(set([random.randint(0, totalPopulation - 1) for _ in
+								range(random.randint(1, totalPopulation))]))
 			# return (mutants)
 			print(colored("[GENETIC]", "cyan"), "For this generation,", len(mutants), "individual(s) will mutate")
 			for key in mutants:
 				individual = population[key]
 				population.append(
-					self.evolve_individual(individual, mutation_probability, permutation_probability, move_probability))
+					self.evolveIndividual(individual, mutationProbability, permutationProbability, moveProbability))
 			# # Evaluate the entire population
-			# fitnesses = list(map(self.evaluate_individual, population))
+			# fitnesses = list(map(self.evaluateIndividual, population))
 			# for ind, fit in zip(population, fitnesses):
 			# 	ind.fitness.values = fit
 			# 	if best.fitness.values[0] > ind.fitness.values[0]:
 			# 		print(colored("[GENETIC]", "cyan"), "A better individual has been found. New best time = ",
 			# 			  ind.fitness.values[0])
 			# 		best = copy.deepcopy(ind)
-			# population = self.run_tournament(population, total=total_population)
+			# population = self.runTournament(population, total=totalPopulation)
 
 		# print(colored("[GENETIC]", "cyan"), "Evolution finished")
-		# if self.constraint_order_respected(best):
+		# if self.constraintOrderRespected(best):
 		# 	print(colored("[GENETIC]", "cyan"), "Best time found equals", best.fitness.values[0])
 		# 	print(colored("[GENETIC]", "cyan"), "Simulating work on machines")
-		# 	total_time = self.run_simulation(best)
+		# 	totalTime = self.runSimulation(best)
 		# 	print(colored("[GENETIC]", "cyan"), "Simulation finished")
 		# 	print(colored("[GENETIC]", "cyan"), "Genetic scheduler finished")
 		# else:
@@ -288,6 +288,6 @@ class GeneticScheduler:
 
 		# # Reenable stdout
 		# if not verbose:
-		# 	sys.stdout = self.__original_stdout
+		# 	sys.stdout = self.__originalStdout
 
-		# return total_time
+		# return totalTime

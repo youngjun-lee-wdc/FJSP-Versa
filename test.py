@@ -1,77 +1,77 @@
 class Test:
-	def __init__(self, id_test):
-		self.__id_test = id_test
-		self.__activities_to_be_done = []
-		self.__activities_done = []
+	def __init__(self, idTest):
+		self.__idTest = idTest
+		self.__activitiesToBeDone = []
+		self.__activitiesDone = []
 
 	# Display the test nicer
 	def __str__(self):
 		output = ""
 
-		for activity in self.__activities_to_be_done:
+		for activity in self.__activitiesToBeDone:
 			output += str(activity) + "\n"
 
-		for activity in self.__activities_done:
+		for activity in self.__activitiesDone:
 			output += str(activity) + "\n"
 
 		return output
 
 	# Return the test's id
 	@property
-	def id_test(self):
-		return self.__id_test
+	def idTest(self):
+		return self.__idTest
 
 	# Add an activity to the test
-	def add_activity(self, activity):
-		self.__activities_to_be_done.append(activity)
+	def addActivity(self, activity):
+		self.__activitiesToBeDone.append(activity)
 
 	# Return if the test is done
 	@property
-	def is_done(self):
-		return len(self.activities_to_be_done) == 0
+	def isDone(self):
+		return len(self.activitiesDone) == 0
 
 	# Return the activities yet to be done
 	@property
-	def activities_to_be_done(self):
-		return self.__activities_to_be_done
+	def activitiesToBeDone(self):
+		return self.__activitiesToBeDone
 
 	# Return the activities already done
 	@property
-	def activities_done(self):
-		return self.__activities_done
+	def activitiesDone(self):
+		return self.__activitiesDone
 
 	# Method an activity calls to signal it's done
-	def activity_is_done(self, activity):
-		if not activity.is_done:
+	def activityIsDone(self, activity):
+		if not activity.isDone:
 			raise EnvironmentError("This activity is not done")
-		self.__activities_to_be_done = list(
-			filter(lambda element: element.id_activity != activity.id_activity, self.__activities_to_be_done))
-		self.__activities_done.append(activity)
+		self.__activitiesToBeDone = list(
+			filter(lambda element: element.idActivity != activity.idActivity, self.__activitiesToBeDone))
+		self.__activitiesDone.append(activity)
 
 	# Return the current activity that need to be processe
 	@property
-	def current_activity(self):
-		if len(self.activities_to_be_done) == 0:
+	def currentActivity(self):
+		if len(self.activitiesToBeDone) == 0:
 			raise EnvironmentError("All activities are already done")
-		return self.__activities_to_be_done[0]
+		return self.__activitiesToBeDone[0]
 
 	@property
-	def remaining_shop_time(self):
-		return sum(map(lambda activity: activity.shop_time, self.activities_to_be_done))
+	def remainingShopTime(self):
+		return sum(map(lambda activity: activity.shopTime, self.activitiesToBeDone))
 
 	@property
-	def total_shop_time(self):
-		return sum(map(lambda activity: activity.shop_time, self.activities_to_be_done + self.activities_done))
+	def totalShopTime(self):
+		return sum(map(lambda activity: activity.shopTime, self.activitiesToBeDone + self.activitiesDone))
 
-	def check_if_previous_activity_is_done(self, activity_id):
-		if activity_id == 1:
+	def checkIfPreviousActivityIsDone(self, activityId):
+		if activityId == 1:
 			return True
-		for activity in self.__activities_done:
-			if activity.id_activity == activity_id - 1:
+		for activity in self.__activitiesDone:
+			if activity.idActivity == activityId - 1:
 				return True
 		return False
 
-	def get_activity(self, id_activity):
-		for activity in self.__activities_to_be_done:
-			if activity.id_activity == id_activity:
+	def getActivity(self, idActivity):
+		for activity in self.__activitiesToBeDone:
+			if activity.idActivity == idActivity:
 				return activity
