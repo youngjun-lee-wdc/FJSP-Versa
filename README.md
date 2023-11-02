@@ -23,7 +23,7 @@ Every subsequent row represents a test suite.
   - 2nd number in a grouping represents the ID of the DUT.
   - 3rd number in a grouping represents the unit of time it takes to complete the test.
   - Example: In test suite 1 above, 3 tests are to be completed:
-    - 1st test cna be processed by 2 alt DUTs (a,b) taking 4 and 3 units of time respectively.
+    - 1st test can be processed by 2 alt DUTs (a,b) taking 4 and 3 units of time respectively.
     - 2nd test can be processed by 1 DUT (c) and takes 2 units of time.
     - 3rd test can be processed by 1 DUT (a) and takes 2 units of time.
 

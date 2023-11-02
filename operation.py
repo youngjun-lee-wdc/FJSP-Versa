@@ -1,16 +1,16 @@
 class Operation:
-	def __init__(self, id_operation: int, id_dut: str, duration: int):
-		self.__id_operation = id_operation
+	def __init__(self, idOperation: int, idDut: str, duration: int):
+		self.__idOperation = idOperation
 		self.__duration = duration
-		self.__id_dut = id_dut
+		self.__idDut = idDut
 		self.__time = None
-		self.__is_pending = False
-		self.__place_of_arrival = None
+		self.__isPending = False
+		self.__placeOfArrival = None
 
 	# Display the operation nicer
 	def __str__(self):
-		output = "Operation # " + str(self.__id_operation) + " -> Dut: " + str(
-			self.__id_dut) + ", Duration: " + str(self.__duration)
+		output = "Operation # " + str(self.__idOperation) + " -> Dut: " + str(
+			self.__idDut) + ", Duration: " + str(self.__duration)
 
 		if not (self.__time is None):
 			output += ", Started at time " + str(self.__time)
@@ -19,37 +19,37 @@ class Operation:
 
 	# Return the operation's id
 	@property
-	def id_operation(self):
-		return self.__id_operation
+	def idOperation(self):
+		return self.__idOperation
 
 	# Return if an operation is done at time t
-	def is_done(self, t):
+	def isDone(self, t):
 		return not (self.__time is None) and self.__time + self.__duration <= t
 
 	# Return if a machine is already treating the operation
 	@property
-	def is_pending(self):
-		return self.__is_pending
+	def isPending(self):
+		return self.__isPending
 
 	# Set the pending status
-	@is_pending.setter
-	def is_pending(self, value):
-		self.__is_pending = value
+	@isPending.setter
+	def isPending(self, value):
+		self.__isPending = value
 
 	# Return the slot of the machine allocated for the treatment of the operation
 	@property
-	def place_of_arrival(self):
-		return self.__place_of_arrival
+	def placeOfArrival(self):
+		return self.__placeOfArrival
 
 	# Set the slot of the machine allocated for the treatment of the operation
-	@place_of_arrival.setter
-	def place_of_arrival(self, value):
-		self.__place_of_arrival = value
+	@placeOfArrival.setter
+	def placeOfArrival(self, value):
+		self.__placeOfArrival = value
 
 	# Return the machine's id who has to do the operation
 	@property
-	def id_dut(self):
-		return self.__id_dut
+	def idDut(self):
+		return self.__idDut
 
 	# Return the operation's duration
 	@property

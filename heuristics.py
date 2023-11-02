@@ -1,102 +1,102 @@
 class Heuristics:
 	# When a choice between multiple operations is available, always pick the first one
 	@staticmethod
-	def select_first_operation(tests_to_be_done, max_operations, _):
-		best_candidates = {}
+	def selectFirstOperation(testsToBeDone, maxOperations, _):
+		bestCandidates = {}
 
-		for test in tests_to_be_done:
-			current_activity = test.current_activity
-			best_operation = current_activity.shortest_operation
+		for test in testsToBeDone:
+			currentActivity = test.currentActivity
+			bestOperation = currentActivity.shortestOperation
 
-			if best_candidates.get(best_operation.id_dut) is None:
-				best_candidates.update({best_operation.id_dut: [(current_activity, best_operation)]})
-			elif len(best_candidates.get(best_operation.id_dut)) < max_operations:
-				best_candidates.get(best_operation.id_dut).append((current_activity, best_operation))
+			if bestCandidates.get(bestOperation.idDut) is None:
+				bestCandidates.update({bestOperation.idDut: [(currentActivity, bestOperation)]})
+			elif len(bestCandidates.get(bestOperation.idDut)) < maxOperations:
+				bestCandidates.get(bestOperation.idDut).append((currentActivity, bestOperation))
 			else:
-				list_operations = best_candidates.get(best_operation.id_dut)
+				listOperations = bestCandidates.get(bestOperation.idDut)
 
-				for key, (_, operation) in enumerate(list_operations):
-					if operation.duration < best_operation.duration:
-						list_operations.pop(key)
+				for key, (_, operation) in enumerate(listOperations):
+					if operation.duration < bestOperation.duration:
+						listOperations.pop(key)
 						break
 
-				if len(list_operations) < max_operations:
-					list_operations.append((current_activity, best_operation))
+				if len(listOperations) < maxOperations:
+					listOperations.append((currentActivity, bestOperation))
 
-		return best_candidates
+		return bestCandidates
 
 	# LEPT rule
 	@staticmethod
-	def longest_expected_processing_time_first(jobs_to_be_done, max_operations, current_time):
+	def longestExpectedProcessingTimeFirst(jobsToBeDone, maxOperations, currentTime):
 		pass
 
 	# Shortest slack per remaining operations
 	# S/RO = [(Due date - Today’s date) - Total shop time remaining] / Number of operations remaining
 	@staticmethod
-	def shortest_slack_per_remaining_operations(jobs_to_be_done, max_operations, current_time):
+	def shortestSlackPerRemainingOperations(jobsToBeDone, maxOperations, currentTime):
 		pass
 
 	# Highest critical ratios
 	# CR = Processing Time / (Due Date – Current Time)
 	@staticmethod
-	def highest_critical_ratios(tests_to_be_done, max_operations, current_time):
-		best_candidates = {}
-		critical_ratios = {}
+	def highestCriticalRatios(testsToBeDone, maxOperations, currentTime):
+		bestCandidates = {}
+		criticalRatios = {}
 		assignment = {}
 
-		for test in tests_to_be_done:
-			current_activity = test.current_activity
+		for test in testsToBeDone:
+			currentActivity = test.currentActivity
 
 			# Compute critical ratio for each operation for an activity
-			for operation in current_activity.next_operations:
-				critical_ratio = operation.duration / (test.total_shop_time - current_time)
-				critical_ratios.update({test.id_job: (current_activity, operation, critical_ratio)})
+			for operation in currentActivity.nextOperations:
+				criticalRatio = operation.duration / (test.totalShopTime - currentTime)
+				criticalRatios.update({test.idTest: (currentActivity, operation, criticalRatio)})
 
-			for id_job, current_activity, operation, critical_ratio in critical_ratios.items():
-				if assignment.get(operation.id_dut) is None:
-					assignment.update({operation.id_dut: (current_activity, operation, critical_ratio)})
+			for idTest, currentActivity, operation, criticalRatios in criticalRatios.items():
+				if assignment.get(operation.idDut) is None:
+					assignment.update({operation.idDut: (currentActivity, operation, criticalRatios)})
 
-				elif len(assignment.get(operation.id_dut)) < max_operations:
-					list_operations = assignment.get(operation.id_dut)
-					list_operations.append((current_activity, operation, critical_ratio))
-					best_candidates.update({operation.id_dut: list_operations})
+				elif len(assignment.get(operation.idDut)) < maxOperations:
+					listOperations = assignment.get(operation.idDut)
+					listOperations.append((currentActivity, operation, criticalRatios))
+					bestCandidates.update({operation.idDut: listOperations})
 
 	# TODO: end that
 
-	# Assign randomly jobs to machine
+	# Assign randomly tests to duts
 	@staticmethod
-	def random_operation_choice(tests_to_be_done, max_operations, _):
+	def randomOperationChoice(testsToBeDone, maxOperations, _):
 		import random
-		best_candidates = {}
-		dict_operations = {}
+		bestCandidates = {}
+		dictOperations = {}
 
-		for test in tests_to_be_done:
-			current_activity = test.current_activity
-			for operation in current_activity.next_operations:
-				if dict_operations.get(operation.id_dut) is None:
-					dict_operations.update({operation.id_dut: [(current_activity, operation)]})
+		for test in testsToBeDone:
+			currentActivity = test.currentActivity
+			for operation in currentActivity.nextOperations:
+				if dictOperations.get(operation.idDut) is None:
+					dictOperations.update({operation.idDut: [(currentActivity, operation)]})
 				else:
-					dict_operations.get(operation.id_dut).append((current_activity, operation))
+					dictOperations.get(operation.idDut).append((currentActivity, operation))
 
-		for dut, list_operations in dict_operations.items():
-			best_candidates.update({dut: list(
-				set([list_operations[random.randint(0, len(list_operations) - 1)] for _ in range(max_operations)]))})
+		for dut, listOperations in dictOperations.items():
+			bestCandidates.update({dut: list(
+				set([listOperations[random.randint(0, len(listOperations) - 1)] for _ in range(maxOperations)]))})
 
-		return best_candidates
+		return bestCandidates
 
 	## Creation of Machine assignment and operation sequence lists (need improvement)
 	##
 	@staticmethod
-	def initialisation_list(tests_to_be_done):
-		dut_assignment = []
-		operation_sequence = []
-		for job in tests_to_be_done:
-			for activity in job.activities_to_be_done:
-				operation_sequence.append(job.id_job)
-				dut_assignment.append(activity.next_operations[0].id_dut)
+	def initialisationlList(testsToBeDone):
+		dutAssignment = []
+		operationSequence = []
+		for test in testsToBeDone:
+			for activity in test.activitiesToBeDone:
+				operationSequence.append(test.idTest)
+				dutAssignment.append(activity.nextOperations[0].idDut)
 		print("machine assignment :")
-		for dut in dut_assignment:
+		for dut in dutAssignment:
 			print(str(dut))
 		print("operation sequence :")
-		for operation in operation_sequence:
+		for operation in operationSequence:
 			print(operation)
