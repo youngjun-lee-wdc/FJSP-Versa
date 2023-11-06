@@ -7,11 +7,11 @@ from termcolor import colored
 class Scheduler:
 	def __init__(self, duts, maxOperations, tests):
 		init()  # Init colorama for color display
-		self.__originalStdout = sys.stdout
-		self.__duts = duts
-		self.__testsToBeDone = tests
-		self.__testsDone = []
-		self.__maxOperations = maxOperations
+		self.OriginalStdout = sys.stdout
+		self.Duts = duts
+		self.TestsToBeDone = tests
+		self.TestsDone = []
+		self.MaxOperations = maxOperations
 
 	# Run the scheduler with an heuristic
 	def run(self, heuristic, verbose=True):
@@ -20,33 +20,32 @@ class Scheduler:
 			sys.stdout = None
 
 		currentStep = 0
-
-		while len(self.__testsToBeDone) > 0:
+		while len(self.TestsToBeDone) > 0:
 			currentStep += 1
 
-			bestCandidates = heuristic(self.__testsToBeDone, self.__maxOperations, currentStep)
+			bestCandidates = heuristic(self.TestsToBeDone, self.MaxOperations, currentStep)
 			for idDut, candidates in bestCandidates.items():
-				dutsList = [dut.idDut for dut in self.__duts]
-				idx = dutsList.index(idDut)
-				dut = self.__duts[idx]
+				# raise ValueError(self.Duts)
+				dutsList = [dut.idDut for dut in self.Duts]
+				dutIdx = dutsList.index(idDut)
+				dut = self.Duts[dutIdx]
+
 				for activity, operation in candidates:
 					if not (dut.isWorkingAtMaxCapacity() or activity.isPending):
 						dut.addOperation(activity, operation)
 
-			for dut in self.__duts:
+			for dut in self.Duts:
 				dut.work()
 
-			for test in self.__testsToBeDone:
-				if test.is_done:
-					self.__testsToBeDone = list(
-						filter(lambda element: element.idTest != test.idTest, self.__testsToBeDone))
-					self.__testsDone.append(test)
-
+			for test in self.TestsToBeDone:
+				if test.isDone:
+					self.TestsToBeDone = list(
+						filter(lambda element: element.idTest != test.idTest, self.TestsToBeDone))
+					self.TestsDone.append(test)
 		print(colored("[SCHEDULER]", "green"), "Done in " + str(currentStep) + " units of time")
 
 		# Reenable stdout
 		if not verbose:
-			sys.stdout = self.__originalStdout
-
+			sys.stdout = self.OriginalStdout
 
 		return currentStep
