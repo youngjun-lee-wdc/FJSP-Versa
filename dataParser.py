@@ -1,10 +1,10 @@
+from test import Test
+from activity import Activity
+from operation import Operation
+from dut import Dut
+
 import os
 import re
-from activity import Activity
-
-from test import Test
-from dut import Dut
-from operation import Operation
 
 
 def parse(path):
@@ -14,49 +14,43 @@ def parse(path):
 			maxOperations))
 		testsList = []
 		duts = set()
-
-		# Current test's id
+		# Current job's id
 		idTest = 1
-		# print(number_total_tests, number_total_duts, number_max_operations)
-
 
 		for key, line in enumerate(data):
-			# invalid test data 
 			if key >= numberTotalTests:
 				break
 			# Split data with multiple spaces as separator
 			parsedLine = re.findall('\S+', line)
-			# print(parsed_line)
-			# Current test
+			# Current job
 			test = Test(idTest)
-			# print(test)
-			# Current test's id
+			# Current activity's id
 			idActivity = 1
 			# Current item of the parsed line
 			i = 1
-
 			while i < len(parsedLine):
-				operationAlts = int(parsedLine[i])
-
+				# Total number of operations for the activity
+				numberOperations = int(parsedLine[i])
+				# Current activity
 				activity = Activity(test, idActivity)
-				for idOperationAlt in range(1, operationAlts + 1):
-
-					dutAlt = parsedLine[i+2 * idOperationAlt - 1]
+				for idOperation in range(1, numberOperations + 1):
+					dutAlt = parsedLine[i + 2 * idOperation - 1]
 					if dutAlt not in duts:
 						duts.add(dutAlt)
-					activity.addOperation(Operation(idOperationAlt, str(parsedLine[i + 2 * idOperationAlt - 1]),
-													 int(parsedLine[i + 2 * idOperationAlt])))
-					# operation is initialized with id_operation ie. the number in the list of operations, the id_machine (i want it to be a string instead of int) and the duration
+
+					activity.addOperation(Operation(idOperation, parsedLine[i + 2 * idOperation - 1],
+													int(parsedLine[i + 2 * idOperation])))
+					# operation is initialized with idOperation ie. the number in the list of operations, the idDut (i want it to be a string instead of int) and the duration
 				test.addActivity(activity)
-				# jump to next operation sequence
-				i += 1 + 2 * operationAlts
-				idTest += 1
+				i += 1 + 2 * numberOperations
+				idActivity += 1
+
 			testsList.append(test)
 			idTest += 1
-		dutsList = []
-		# print(duts)
-		for dut in duts:
-			dutsList.append(Dut(dut, numberMaxOperations))
 
-		return testsList, dutsList, numberMaxOperations
+	# Duts
+	dutsList = []
+	for dut in duts:
+		dutsList.append(Dut(dut,numberMaxOperations))
 
+	return testsList, dutsList, numberMaxOperations

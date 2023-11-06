@@ -27,13 +27,13 @@ class Heuristics:
 
 	# LEPT rule
 	@staticmethod
-	def longestExpectedProcessingTimeFirst(jobsToBeDone, maxOperations, currentTime):
+	def longestExpectedProcessingTimeFirst(testsToBeDone, maxOperations, currentTime):
 		pass
 
 	# Shortest slack per remaining operations
 	# S/RO = [(Due date - Today’s date) - Total shop time remaining] / Number of operations remaining
 	@staticmethod
-	def shortestSlackPerRemainingOperations(jobsToBeDone, maxOperations, currentTime):
+	def shortestSlackPerRemainingOperations(testsToBeDone, maxOperations, currentTime):
 		pass
 
 	# Highest critical ratios
@@ -52,18 +52,18 @@ class Heuristics:
 				criticalRatio = operation.duration / (test.totalShopTime - currentTime)
 				criticalRatios.update({test.idTest: (currentActivity, operation, criticalRatio)})
 
-			for idTest, currentActivity, operation, criticalRatios in criticalRatios.items():
+			for idTest, currentActivity, operation, criticalRatio in criticalRatios.items():
 				if assignment.get(operation.idDut) is None:
-					assignment.update({operation.idDut: (currentActivity, operation, criticalRatios)})
+					assignment.update({operation.idDut: (currentActivity, operation, criticalRatio)})
 
 				elif len(assignment.get(operation.idDut)) < maxOperations:
 					listOperations = assignment.get(operation.idDut)
-					listOperations.append((currentActivity, operation, criticalRatios))
+					listOperations.append((currentActivity, operation, criticalRatio))
 					bestCandidates.update({operation.idDut: listOperations})
 
 	# TODO: end that
 
-	# Assign randomly tests to duts
+	# Assign randomly tests to dut
 	@staticmethod
 	def randomOperationChoice(testsToBeDone, maxOperations, _):
 		import random
@@ -81,20 +81,19 @@ class Heuristics:
 		for dut, listOperations in dictOperations.items():
 			bestCandidates.update({dut: list(
 				set([listOperations[random.randint(0, len(listOperations) - 1)] for _ in range(maxOperations)]))})
-
 		return bestCandidates
 
-	## Creation of Machine assignment and operation sequence lists (need improvement)
+	## Creation of Dut assignment and operation sequence lists (need improvement)
 	##
 	@staticmethod
-	def initialisationlList(testsToBeDone):
+	def initialisationList(testsToBeDone):
 		dutAssignment = []
 		operationSequence = []
 		for test in testsToBeDone:
 			for activity in test.activitiesToBeDone:
 				operationSequence.append(test.idTest)
 				dutAssignment.append(activity.nextOperations[0].idDut)
-		print("machine assignment :")
+		print("dut assignment :")
 		for dut in dutAssignment:
 			print(str(dut))
 		print("operation sequence :")

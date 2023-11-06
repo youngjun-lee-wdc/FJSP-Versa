@@ -15,10 +15,10 @@ from termcolor import colored
 class GeneticScheduler:
 	def __init__(self, duts, tests):
 		init()  # Init colorama for color display
-		self.__originalStdout = sys.stdout
-		self.__toolbox = base.Toolbox()
-		self.__duts = duts
-		self.__tests = tests
+		self.OriginalStdout = sys.stdout
+		self.Toolbox = base.Toolbox()
+		self.Duts = duts
+		self.Tests = tests
 
 	# Constraint order
 	@staticmethod
@@ -33,71 +33,69 @@ class GeneticScheduler:
 
 	# Initialize an individual for the genetic algorithm
 	def initIndividual(self, indClass, size):
-		tempTestsCopy = copy.deepcopy(self.__tests)
-		tempDutsCopy = copy.deepcopy(self.__duts)
+		tempTestsList = copy.deepcopy(self.Tests)
+		tempDutsList = copy.deepcopy(self.Duts)
 
 		# Run the scheduler
-		s = Scheduler(tempDutsCopy, 1, tempTestsCopy)
-		s.run(Heuristics.randomOperationChoice, verbose=False)
+		s = Scheduler(tempDutsList, 1, tempTestsList)
+		testing = s.run(Heuristics.randomOperationChoice, verbose=False)
 
 		# Retriving all the activities and the operation done
 		listActivities = []
-		for tempTest in tempTestsCopy:
+		for tempTest in tempTestsList:
 			for tempActivity in tempTest.activitiesDone:
-				raise ValueError(tempActivity.idActivity)
-				activity = self.__tests[tempActivity.idTest-1].getActivity(tempActivity.idActivity)
-				# activity = self.__tests[temp_activity.idTest - 1].getActivity(temp_activity.idActivity)
-				operation = activity.get_operation(tempActivity.operation_done.idOperation)
-				listActivities.append((tempActivity.operation_done.time, activity, operation))
+				activity = self.Tests[tempActivity.idTest - 1].getActivity(tempActivity.idActivity)
+				operation = activity.getOperation(tempActivity.operationDone.idOperation)
+				listActivities.append((tempActivity.operationDone.time, activity, operation))
 		# Ordering activities by time
 		listActivities = sorted(listActivities, key=lambda x: x[0])
 		individual = [(activity, operation) for (_, activity, operation) in listActivities]
-		del tempTestsCopy, tempDutsCopy
+		del tempTestsList, tempDutsList
 		return indClass(individual)
 
 	# Initialize a population
 	def initPopulation(self, totalPopulation):
-		return [self.__toolbox.individual() for _ in range(totalPopulation)]
+		return [self.Toolbox.individual() for _ in range(totalPopulation)]
 
 	# Compute the time an individual take
 	def computeTime(self, individual):
 		# List matching the activities to the time it takes place
 		listTime = []
-		# Operation schedule on machines indexed by machines' id
+		# Operation schedule on duts indexed by duts' id
 		schedule = {}
-		for dut in self.__duts:
+		for dut in self.Duts:
 			schedule.update({dut.idDut: []})
-		# Operation done indexed by job's id
+		# Operation done indexed by test's id
 		operationsDone = {}
-		for test in self.__tests:
+		for test in self.Tests:
 			operationsDone.update({test.idTest: []})
 
 		# For each item in individual, we compute the actual time at which the operation considered start
 		for activity, operation in individual:
 			# Get at which time the previous operation is done
-			timeLastOperation, lastOperationJob = operationsDone.get(activity.idTest)[-1] if len(
+			timeLastOperation, lastOperationTest = operationsDone.get(activity.idTest)[-1] if len(
 				operationsDone.get(activity.idTest)) > 0 else (0, None)
-			timeLastMachine, lastOperationMachine = schedule.get(operation.idDut)[-1] if len(
+			timeLastDut, lastOperationDut = schedule.get(operation.idDut)[-1] if len(
 				schedule.get(operation.idDut)) > 0 else (0, None)
 
-			if lastOperationMachine is None and lastOperationJob is None:
+			if lastOperationDut is None and lastOperationTest is None:
 				time = 0
-			elif lastOperationMachine is None:
-				time = timeLastOperation + lastOperationJob.duration
-			elif lastOperationJob is None:
-				time = timeLastMachine + lastOperationMachine.duration
+			elif lastOperationDut is None:
+				time = timeLastOperation + lastOperationTest.duration
+			elif lastOperationTest is None:
+				time = timeLastDut + lastOperationDut.duration
 			else:
-				time = max(timeLastMachine + lastOperationMachine.duration,
-						   timeLastOperation + lastOperationJob.duration)
+				time = max(timeLastDut + lastOperationDut.duration,
+						   timeLastOperation + lastOperationTest.duration)
 
 			listTime.append(time)
 
 			operationsDone.update({activity.idTest: operationsDone.get(activity.idTest) + [(time, operation)]})
 			schedule.update({operation.idDut: schedule.get(operation.idDut) + [(time, operation)]})
 
-		# We compute the total time we need to process all the jobs
+		# We compute the total time we need to process all the tests
 		totalTime = 0
-		for dut in self.__duts:
+		for dut in self.Duts:
 			if len(schedule.get(dut.idDut)) > 0:
 				time, operation = schedule.get(dut.idDut)[-1]
 				if time + operation.duration > totalTime:
@@ -132,7 +130,7 @@ class GeneticScheduler:
 	# Permute an individual
 	# In our case it means select an activity and permute it with another
 	# It needs to meet some constraint to be efficient:
-	#	You can't move an activity before or after another one from the same job
+	#	You can't move an activity before or after another one from the same test
 	@staticmethod
 	def computeBounds(permutation, consideredIndex):
 		consideredActivity, _ = permutation[consideredIndex]
@@ -173,10 +171,10 @@ class GeneticScheduler:
 
 	# Move an activity inside the scheduler (different than swapping)
 	def moveIndividual(self, individual):
-		print(individual)
 		consideredIndex = minIndex = maxIndex = 0
 		# Loop until we can make some moves, i.e. when maxIndex - minIndex > 2
 		while maxIndex - minIndex <= 2:
+			# print(individual)
 			consideredIndex = random.randint(0, len(individual) - 1)
 			minIndex, maxIndex = self.computeBounds(individual, consideredIndex)
 		# Loop until we find a different index to move to
@@ -188,13 +186,17 @@ class GeneticScheduler:
 		return individual
 
 	def evolveIndividual(self, individual, mutationProbability, permutationProbability, moveProbability):
+		# print(individual)
 		futureIndividual = copy.deepcopy(individual)
 		if random.randint(0, 100) < mutationProbability:
 			futureIndividual = self.mutateIndividual(futureIndividual)
 		if random.randint(0, 100) < permutationProbability:
 			futureIndividual = self.permuteIndividual(futureIndividual)
 		if random.randint(0, 100) < moveProbability:
+			# print(futureIndividual)
 			futureIndividual = self.moveIndividual(futureIndividual)
+
+		
 		return futureIndividual
 
 	# Run a tournament between individuals within a population to get some of them
@@ -215,12 +217,12 @@ class GeneticScheduler:
 		del population
 		return newPopulation
 
-	# Simulate the individual with the machines
+	# Simulate the individual with the duts
 	def runSimulation(self, individual):
 		totalTime, listTime = self.computeTime(individual)
 		for key, (individualActivity, individualOperation) in enumerate(individual):
-			activity = self.__tests[individualActivity.idTest - 1].getActivity(individualActivity.idActivity)
-			operation = activity.get_operation(individualOperation.idOperation)
+			activity = self.Tests[individualActivity.idTest - 1].getActivity(individualActivity.idActivity)
+			operation = activity.getOperation(individualOperation.idOperation)
 			operation.time = listTime[key]
 			operation.placeOfArrival = 0
 			activity.terminateOperation(operation)
@@ -229,7 +231,6 @@ class GeneticScheduler:
 	# Run the genetic scheduler
 	def runGenetic(self, totalPopulation=10, maxGeneration=100, verbose=False):
 		assert totalPopulation > 0, maxGeneration > 0
-
 		# Disable print if verbose is False
 		if not verbose:
 			sys.stdout = None
@@ -237,22 +238,23 @@ class GeneticScheduler:
 		creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 		creator.create("Individual", list, fitness=creator.FitnessMin)
 
-		self.__toolbox.register("individual", self.initIndividual, creator.Individual, size=1)
-		self.__toolbox.register("mutate", self.mutateIndividual)
-		self.__toolbox.register("permute", self.permuteIndividual)
-		self.__toolbox.register("evaluate", self.evaluateIndividual)
-		 
+		self.Toolbox.register("individual", self.initIndividual, creator.Individual, size=1)
+		self.Toolbox.register("mutate", self.mutateIndividual)
+		self.Toolbox.register("permute", self.permuteIndividual)
+		self.Toolbox.register("evaluate", self.evaluateIndividual)
+
 		print(colored("[GENETIC]", "cyan"), "Generating population")
-		
 		population = self.initPopulation(totalPopulation)
-		print(population)
 		best = population[0]
-		# print(best)
-		# return 
 		best.fitness.values = self.evaluateIndividual(best)
+
+
+
+
+
 		print(colored("[GENETIC]", "cyan"), "Starting evolution for", maxGeneration, "generations")
 		for currentGeneration in range(maxGeneration):
-		# 	# Generate mutation and permutation probabilities for the next generation
+			# Generate mutation and permutation probabilities for the next generation
 			mutationProbability = random.randint(0, 100)
 			permutationProbability = random.randint(0, 100)
 			moveProbability = random.randint(0, 100)
@@ -260,34 +262,33 @@ class GeneticScheduler:
 			print(colored("[GENETIC]", "cyan"), "Evolving to generation", currentGeneration + 1)
 			mutants = list(set([random.randint(0, totalPopulation - 1) for _ in
 								range(random.randint(1, totalPopulation))]))
-			# return (mutants)
 			print(colored("[GENETIC]", "cyan"), "For this generation,", len(mutants), "individual(s) will mutate")
 			for key in mutants:
 				individual = population[key]
 				population.append(
 					self.evolveIndividual(individual, mutationProbability, permutationProbability, moveProbability))
-			# # Evaluate the entire population
-			# fitnesses = list(map(self.evaluateIndividual, population))
-			# for ind, fit in zip(population, fitnesses):
-			# 	ind.fitness.values = fit
-			# 	if best.fitness.values[0] > ind.fitness.values[0]:
-			# 		print(colored("[GENETIC]", "cyan"), "A better individual has been found. New best time = ",
-			# 			  ind.fitness.values[0])
-			# 		best = copy.deepcopy(ind)
-			# population = self.runTournament(population, total=totalPopulation)
+			# Evaluate the entire population
+			fitnesses = list(map(self.evaluateIndividual, population))
+			for ind, fit in zip(population, fitnesses):
+				ind.fitness.values = fit
+				if best.fitness.values[0] > ind.fitness.values[0]:
+					print(colored("[GENETIC]", "cyan"), "A better individual has been found. New best time = ",
+						  ind.fitness.values[0])
+					best = copy.deepcopy(ind)
+			population = self.runTournament(population, total=totalPopulation)
 
-		# print(colored("[GENETIC]", "cyan"), "Evolution finished")
-		# if self.constraintOrderRespected(best):
-		# 	print(colored("[GENETIC]", "cyan"), "Best time found equals", best.fitness.values[0])
-		# 	print(colored("[GENETIC]", "cyan"), "Simulating work on machines")
-		# 	totalTime = self.runSimulation(best)
-		# 	print(colored("[GENETIC]", "cyan"), "Simulation finished")
-		# 	print(colored("[GENETIC]", "cyan"), "Genetic scheduler finished")
-		# else:
-		# 	print(colored("[GENETIC]", "cyan"), "The individual doesn't match the constraint order")
+		print(colored("[GENETIC]", "cyan"), "Evolution finished")
+		if self.constraintOrderRespected(best):
+			print(colored("[GENETIC]", "cyan"), "Best time found equals", best.fitness.values[0])
+			print(colored("[GENETIC]", "cyan"), "Simulating work on duts")
+			totalTime = self.runSimulation(best)
+			print(colored("[GENETIC]", "cyan"), "Simulation finished")
+			print(colored("[GENETIC]", "cyan"), "Genetic scheduler finished")
+		else:
+			print(colored("[GENETIC]", "cyan"), "The individual doesn't match the constraint order")
 
-		# # Reenable stdout
-		# if not verbose:
-		# 	sys.stdout = self.__originalStdout
+		# Reenable stdout
+		if not verbose:
+			sys.stdout = self.OriginalStdout
 
-		# return totalTime
+		return totalTime
