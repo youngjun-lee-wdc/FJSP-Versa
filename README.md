@@ -11,7 +11,7 @@ test.fjs
 2   1   a   4   1   b   3
 ```
 
-The first row is reserved for test overview.
+The first row is reserved for overview of all tests.
 - 1st number represents the total number of test suites to be executed.
 - 2nd number represents the total number of DUTs available.
 - 3rd number represents the avg number of machines per in a test suite.
