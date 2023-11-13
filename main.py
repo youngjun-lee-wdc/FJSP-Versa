@@ -28,13 +28,13 @@ while True:
         totalPop = int(popString)
     except ValueError:
         totalPop = 20
-    
+
     genString = input("Max Generation [default=400]: ")
     try:
         maxGen = int(genString)
     except ValueError:
         maxGen = 400
-    
+
     startTime = timeit.default_timer()
     schedule = GeneticScheduler(tempDutsList, tempTestsList)
     schedule.runGenetic(totalPop, maxGen, verbose=True)
@@ -45,9 +45,8 @@ while True:
     if draw == "n" or draw == "N":
         continue
     else:
-        Drawer.drawSchedule(numTotalDuts, 1, tempTestsList, filename="outputGenetic.png")
+        Drawer.drawSchedule(numTotalDuts, 1, tempTestsList,
+                            filename="outputGenetic.png")
     del schedule
     del tempTestsList, tempDutsList
     break
-
-

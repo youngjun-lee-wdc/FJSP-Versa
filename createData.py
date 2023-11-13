@@ -2,10 +2,12 @@ import json
 import csv
 from typing import TypedDict, Mapping, Any
 
+
 class DUT(TypedDict):
     TypeAndCapacity: str
 
-def getDuts(testPlan: str) :
+
+def getDuts(testPlan: str):
 
     with open(testPlan) as file:
         csvFile = csv.DictReader(file)
@@ -47,6 +49,7 @@ def getDuts(testPlan: str) :
         print(duts)
         for idx, server in enumerate(duts):
             # print(idx)
+            print(server)
             with open("data/GenData" + str(idx + 1) + ".fjs", 'w') as file:
                 file.write(str(len(server)))
                 file.write("  2")
@@ -63,8 +66,6 @@ def getDuts(testPlan: str) :
                 # print(altMachines)
         return duts
 
-testPlan = 'TestsData.csv'
-getDuts(testPlan)
 
-
-
+TESTPLAN = 'TestsData.csv'
+getDuts(TESTPLAN)
