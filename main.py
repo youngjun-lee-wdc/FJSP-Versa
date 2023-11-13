@@ -18,8 +18,7 @@ numTotalTests = len(dutsList)
 
 print(testsList)
 print(dutsList)
-# print(duts_list)
-# print(duts_list[0].id_dut)
+
 
 while True:
     tempTestsList = copy.deepcopy(testsList)

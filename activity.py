@@ -71,10 +71,6 @@ class Activity:
 																	 key=lambda operation: operation.duration)
 
 	@property
-	def isFeasible(self):
-		return self.Test.checkIfPreviousActivityIsDone(self.IdActivity)
-
-	@property
 	def isPending(self):
 		return len(list(filter(lambda element: element.isPending, self.OperationsToBeDone))) > 0
 
