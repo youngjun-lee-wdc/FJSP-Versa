@@ -1,5 +1,6 @@
 class Activity:
-    def __init__(self, test, idActivity):
+	'''Activity class''' 
+	def __init__(self, test, idActivity):
         self.Test = test
         self.IdActivity = idActivity
         self.OperationsToBeDone = []

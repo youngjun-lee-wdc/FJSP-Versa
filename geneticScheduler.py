@@ -14,6 +14,8 @@ from termcolor import colored
 
 
 class GeneticScheduler:
+    '''Genetic Scheduler class '''
+
     def __init__(self, duts, tests):
         init()  # Init colorama for color display
         self.OriginalStdout = sys.stdout
@@ -40,7 +42,7 @@ class GeneticScheduler:
 
         # Run the scheduler
         s = Scheduler(tempDutsList, 1, tempTestsList)
-        testing = s.run(Heuristics.randomOperationChoice, verbose=False)
+        s.run(Heuristics.randomOperationChoice, verbose=False)
 
         # Retriving all the activities and the operation done
         listActivities = []
