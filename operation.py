@@ -61,6 +61,16 @@ class Operation:
     def time(self):
         return self.Time
 
+    def __eq__(self, other):
+        return self.IdOperation == other.IdOperation
+    
+    def __hash__(self):
+        return hash(self.IdOperation)
+
+    def __lt__(self, other):
+        return self.Duration < other.Duration
+    
+
     # Set the time at which the operation started
     @time.setter
     def time(self, value):

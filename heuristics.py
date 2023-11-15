@@ -6,6 +6,7 @@ class Heuristics:
         bestCandidates = {}
         dictOperations = {}
 
+        
         for test in testsToBeDone:
             currentActivity = test.currentActivity
             for operation in currentActivity.nextOperations:

@@ -49,6 +49,7 @@ def parse(path):
             testsList.append(test)
             idTest += 1
 
+
     # Duts
     dutsList = []
     for dut in duts:

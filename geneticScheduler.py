@@ -65,6 +65,12 @@ class GeneticScheduler:
     def initPopulation(self, totalPopulation):
         return [self.Toolbox.individual() for _ in range(totalPopulation)]
 
+    def printIndividual(self, individual):
+        print(colored("[GENETIC]", "cyan"), "Individual")
+        for activity, operation in individual:
+            print(colored("[GENETIC]", "cyan"), "Activity", activity.idActivity, "from test", activity.idTest,
+                  "is done on dut", operation.idDut, "at time", operation.time, "and duration", operation.duration)
+
     # Compute the time an individual take
     def computeTime(self, individual):
         # List matching the activities to the time it takes place

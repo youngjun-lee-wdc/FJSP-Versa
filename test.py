@@ -75,3 +75,11 @@ class Test:
         for activity in self.ActivitiesToBeDone:
             if activity.idActivity == idActivity:
                 return activity
+
+    def getPreviousActivity(self, idActivity):
+        for activity in self.ActivitiesDone:
+            if activity.idActivity == idActivity - 1:
+                return activity
+        raise EnvironmentError("No previous activity found")
+
+        
